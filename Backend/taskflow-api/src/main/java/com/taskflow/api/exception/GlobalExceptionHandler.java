@@ -49,15 +49,15 @@ public class GlobalExceptionHandler {
     }
 
 
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<ApiError> handleAllUncaughtException(Exception ex, HttpServletRequest request) {
-        ApiError apiError = ApiError.builder()
-                .timestamp(LocalDateTime.now())
-                .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
-                .error(HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase())
-                .message("An unexpected error occurred")
-                .path(request.getRequestURI())
-                .build();
-        return new ResponseEntity<>(apiError, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
+//    @ExceptionHandler(Exception.class)
+//    public ResponseEntity<ApiError> handleAllUncaughtException(Exception ex, HttpServletRequest request) {
+//        ApiError apiError = ApiError.builder()
+//                .timestamp(LocalDateTime.now())
+//                .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
+//                .error(HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase())
+//                .message("An unexpected error occurred")
+//                .path(request.getRequestURI())
+//                .build();
+//        return new ResponseEntity<>(apiError, HttpStatus.INTERNAL_SERVER_ERROR);
+//    }
 }

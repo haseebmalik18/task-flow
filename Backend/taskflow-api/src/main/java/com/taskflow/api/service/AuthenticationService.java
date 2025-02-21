@@ -91,7 +91,7 @@ public class AuthenticationService {
         }
     }
 
-    public String verifyEmail(String email, String code) {
+    public AuthenticationResponse verifyEmail(String email, String code) {
         // Find user
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
@@ -119,7 +119,13 @@ public class AuthenticationService {
         // Delete used token
         tokenRepository.delete(token);
 
-        return "Email verified successfully";
+        String jwtToken = jwtService.generateToken(user);
+
+        // Return response with token
+        return AuthenticationResponse.builder()
+                .token(jwtToken)
+                .message("Email verified successfully")
+                .build();
     }
 
     // In AuthenticationService.java

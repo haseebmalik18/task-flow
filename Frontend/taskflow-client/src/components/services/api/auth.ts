@@ -1,23 +1,22 @@
 import api from "./axios";
+import { AuthResponse, RegisterData } from "../../types/auth.types";
 
 export const authService = {
-  login: async (email: string, password: string) => {
-    const response = await api.post("/auth/authenticate", { email, password });
+  login: async (email: string, password: string): Promise<AuthResponse> => {
+    const response = await api.post<AuthResponse>("/auth/authenticate", {
+      email,
+      password,
+    });
     return response.data;
   },
 
-  register: async (userData: {
-    firstName: string;
-    lastName: string;
-    email: string;
-    password: string;
-  }) => {
-    const response = await api.post("/auth/register", userData);
+  register: async (userData: RegisterData): Promise<AuthResponse> => {
+    const response = await api.post<AuthResponse>("/auth/register", userData);
     return response.data;
   },
 
-  verifyEmail: async (email: string, code: string) => {
-    const response = await api.post("/auth/verify", null, {
+  verifyEmail: async (email: string, code: string): Promise<AuthResponse> => {
+    const response = await api.post<AuthResponse>("/auth/verify", null, {
       params: { email, code },
     });
     return response.data;

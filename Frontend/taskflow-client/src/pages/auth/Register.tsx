@@ -19,7 +19,7 @@ const Register = () => {
   const { register: registerUser } = useAuth();
   const navigate = useNavigate();
   const [error, setError] = useState<string>("");
-  const [isSuccess, setIsSuccess] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const {
     register,
@@ -31,29 +31,22 @@ const Register = () => {
 
   const onSubmit = async (data: RegisterForm) => {
     try {
-      if (data.password !== data.confirmPassword) {
-        setError("Passwords do not match");
-        return;
-      }
-
-      const message = await registerUser({
+      setIsLoading(true);
+      await registerUser({
         firstName: data.firstName,
         lastName: data.lastName,
         email: data.email,
         password: data.password,
       });
 
-      setIsSuccess(true);
-      // Show success message for 3 seconds then redirect
-      setTimeout(() => {
-        navigate("/verify", { state: { email: data.email } });
-      }, 3000);
+      // Navigate directly to verify
+      navigate("/verify", {
+        state: { email: data.email },
+      });
     } catch (error) {
-      if (error instanceof Error) {
-        setError(error.message);
-      } else {
-        setError("Registration failed");
-      }
+      setError(error instanceof Error ? error.message : "Registration failed");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -82,78 +75,74 @@ const Register = () => {
           </p>
         </div>
 
-        {isSuccess ? (
-          <div className="p-4 bg-[#22c55e]/10 rounded-md text-[#22c55e] text-center animate-[fadeIn_0.5s_ease-in]">
-            Registration successful! Check your email for verification.
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          {error && <FormError error={error} />}
+
+          <div className="grid grid-cols-2 gap-4">
+            <Input
+              label="First Name"
+              name="firstName"
+              register={register}
+              error={errors.firstName?.message}
+              rules={{ required: "First name is required" }}
+            />
+
+            <Input
+              label="Last Name"
+              name="lastName"
+              register={register}
+              error={errors.lastName?.message}
+              rules={{ required: "Last name is required" }}
+            />
           </div>
-        ) : (
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-            {error && <FormError error={error} />}
 
-            <div className="grid grid-cols-2 gap-4">
-              <Input
-                label="First Name"
-                name="firstName"
-                register={register}
-                error={errors.firstName?.message}
-                rules={{ required: "First name is required" }}
-              />
+          <Input
+            label="Email"
+            type="email"
+            name="email"
+            register={register}
+            error={errors.email?.message}
+            rules={{
+              required: "Email is required",
+              pattern: {
+                value: /\S+@\S+\.\S+/,
+                message: "Invalid email address",
+              },
+            }}
+          />
 
-              <Input
-                label="Last Name"
-                name="lastName"
-                register={register}
-                error={errors.lastName?.message}
-                rules={{ required: "Last name is required" }}
-              />
-            </div>
+          <Input
+            label="Password"
+            type="password"
+            name="password"
+            register={register}
+            error={errors.password?.message}
+            rules={passwordValidation}
+          />
 
-            <Input
-              label="Email"
-              type="email"
-              name="email"
-              register={register}
-              error={errors.email?.message}
-              rules={{
-                required: "Email is required",
-                pattern: {
-                  value: /\S+@\S+\.\S+/,
-                  message: "Invalid email address",
-                },
-              }}
-            />
+          <Input
+            label="Confirm Password"
+            type="password"
+            name="confirmPassword"
+            register={register}
+            error={errors.confirmPassword?.message}
+            rules={{
+              required: "Please confirm your password",
+              validate: (value) =>
+                value === password || "Passwords do not match",
+            }}
+          />
 
-            <Input
-              label="Password"
-              type="password"
-              name="password"
-              register={register}
-              error={errors.password?.message}
-              rules={passwordValidation}
-            />
-
-            <Input
-              label="Confirm Password"
-              type="password"
-              name="confirmPassword"
-              register={register}
-              error={errors.confirmPassword?.message}
-              rules={{
-                required: "Please confirm your password",
-                validate: (value) =>
-                  value === password || "Passwords do not match",
-              }}
-            />
-
-            <Button
-              type="submit"
-              fullWidth
-              className="bg-[#2563eb] hover:bg-[#2563eb]/90 text-white transform hover:-translate-y-0.5 active:translate-y-0 transition-all duration-150 shadow-lg hover:shadow-xl active:shadow-md mt-6"
-            >
-              Create Account
-            </Button>
-          </form>
-        )}
+          <Button
+            type="submit"
+            fullWidth
+            isLoading={isLoading}
+            disabled={isLoading}
+            className="bg-[#2563eb] hover:bg-[#2563eb]/90 text-white transform hover:-translate-y-0.5 active:translate-y-0 transition-all duration-150 shadow-lg hover:shadow-xl active:shadow-md"
+          >
+            {isLoading ? "Creating Account..." : "Create Account"}
+          </Button>
+        </form>
 
         <div className="mt-6 pt-4 border-t border-gray-200">
           <p className="text-center text-[#1e293b]/80">

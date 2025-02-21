@@ -1,3 +1,4 @@
+// src/components/common/Button.tsx
 import React from "react";
 import { twMerge } from "tailwind-merge";
 
@@ -17,15 +18,18 @@ const Button: React.FC<ButtonProps> = ({
   ...props
 }) => {
   const baseStyles =
-    "px-4 py-2 rounded-md font-medium transition-all duration-200 flex items-center justify-center";
+    "px-4 py-2 rounded-md font-medium transition-all duration-200 flex items-center justify-center transform hover:-translate-y-0.5 active:translate-y-0 shadow-lg hover:shadow-xl active:shadow-md";
   const widthStyles = fullWidth ? "w-full" : "w-auto";
 
   const variants = {
-    primary: "bg-primary text-white hover:bg-primary/90 disabled:bg-primary/50",
+    primary:
+      "bg-[#2563eb] text-white hover:bg-[#2563eb]/90 disabled:bg-[#2563eb]/50",
     secondary:
-      "border-2 border-primary text-primary hover:bg-primary/10 disabled:border-primary/50 disabled:text-primary/50",
-    error: "bg-error text-white hover:bg-error/90 disabled:bg-error/50",
-    success: "bg-success text-white hover:bg-success/90 disabled:bg-success/50",
+      "border-2 border-[#2563eb] text-[#2563eb] hover:bg-[#2563eb]/10 disabled:border-[#2563eb]/50 disabled:text-[#2563eb]/50",
+    error:
+      "bg-[#ef4444] text-white hover:bg-[#ef4444]/90 disabled:bg-[#ef4444]/50",
+    success:
+      "bg-[#22c55e] text-white hover:bg-[#22c55e]/90 disabled:bg-[#22c55e]/50",
   };
 
   return (
@@ -35,7 +39,7 @@ const Button: React.FC<ButtonProps> = ({
         widthStyles,
         variants[variant],
         isLoading && "opacity-70 cursor-wait",
-        disabled && "cursor-not-allowed",
+        disabled && "cursor-not-allowed transform-none hover:transform-none",
         className
       )}
       disabled={disabled || isLoading}
@@ -59,7 +63,7 @@ const Button: React.FC<ButtonProps> = ({
               d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
             />
           </svg>
-          Loading...
+          {children}
         </div>
       ) : (
         children

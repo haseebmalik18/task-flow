@@ -30,7 +30,7 @@ public class AuthenticationController {
     }
 
     @PostMapping("/verify")
-    public ResponseEntity<String> verifyEmail(
+    public ResponseEntity<AuthenticationResponse> verifyEmail(
             @RequestParam String email,
             @RequestParam String code) {
         return ResponseEntity.ok(authenticationService.verifyEmail(email, code));

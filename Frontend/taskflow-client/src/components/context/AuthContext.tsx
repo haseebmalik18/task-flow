@@ -1,5 +1,16 @@
-import { createContext, useContext, ReactNode, useState } from "react";
-import { AuthContextType, AuthState, RegisterData } from "../types/auth.types";
+import {
+  createContext,
+  useContext,
+  ReactNode,
+  useState,
+  useEffect,
+} from "react";
+import {
+  AuthContextType,
+  AuthState,
+  RegisterData,
+  AuthResponse,
+} from "../types/auth.types";
 import { authService } from "../services/api/auth";
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -13,13 +24,29 @@ const initialState: AuthState = {
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [state, setState] = useState<AuthState>(initialState);
 
+  useEffect(() => {
+    const checkAuth = () => {
+      const token = localStorage.getItem("token");
+      if (token) {
+        // possibly validate token here?
+        setState({
+          ...state,
+          isAuthenticated: true,
+          loading: false,
+        });
+      }
+    };
+
+    checkAuth();
+  }, []);
+
   const login = async (email: string, password: string) => {
     try {
       setState({ ...state, loading: true });
       const response = await authService.login(email, password);
       localStorage.setItem("token", response.token);
       setState({
-        user: response.user,
+        user: response.user || null,
         isAuthenticated: true,
         loading: false,
       });
@@ -34,18 +61,28 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setState({ ...state, loading: true });
       const response = await authService.register(userData);
       setState({ ...state, loading: false });
-      return response.message;
+      return response.message || "Registration successful";
     } catch (error) {
       setState({ ...state, loading: false });
       throw error;
     }
   };
 
-  const verifyEmail = async (email: string, code: string) => {
+  const verifyEmail = async (
+    email: string,
+    code: string
+  ): Promise<AuthResponse> => {
     try {
       setState({ ...state, loading: true });
-      await authService.verifyEmail(email, code);
-      setState({ ...state, loading: false });
+      const response = await authService.verifyEmail(email, code);
+
+      setState({
+        user: response.user || null,
+        isAuthenticated: true,
+        loading: false,
+      });
+
+      return response;
     } catch (error) {
       setState({ ...state, loading: false });
       throw error;

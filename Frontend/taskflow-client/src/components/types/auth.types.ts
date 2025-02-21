@@ -18,9 +18,15 @@ export interface RegisterData {
   password: string;
 }
 
+export interface AuthResponse {
+  token: string;
+  message?: string;
+  user?: User;
+}
+
 export interface AuthContextType extends AuthState {
   login: (email: string, password: string) => Promise<void>;
   register: (userData: RegisterData) => Promise<string>;
   logout: () => void;
-  verifyEmail: (email: string, code: string) => Promise<void>;
+  verifyEmail: (email: string, code: string) => Promise<AuthResponse>;
 }
