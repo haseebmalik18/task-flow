@@ -1,5 +1,6 @@
 package com.taskflow.api.service;
 
+import com.taskflow.api.dto.UserDTO;
 import com.taskflow.api.dto.auth.AuthenticationRequest;
 import com.taskflow.api.dto.auth.AuthenticationResponse;
 import com.taskflow.api.dto.auth.RegisterRequest;
@@ -61,42 +62,30 @@ public class AuthenticationService {
     }
 
     public AuthenticationResponse authenticate(AuthenticationRequest request) {
-        try {
+        authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(
+                        request.getEmail(),
+                        request.getPassword()
+                )
+        );
 
-            var user = userRepository.findByEmail(request.getEmail())
-                    .orElseThrow(() -> new InvalidCredentialsException("Invalid email or password"));
+        var user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow();
 
+        var jwtToken = jwtService.generateToken(user);
 
-            if (!user.isEnabled()) {
-                throw new EmailNotVerifiedException("Please verify your email before logging in");
-            }
-
-
-            authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(
-                            request.getEmail(),
-                            request.getPassword()
-                    )
-            );
-
-
-            var jwtToken = jwtService.generateToken(user);
-
-            return AuthenticationResponse.builder()
-                    .token(jwtToken)
-                    .build();
-
-        } catch (AuthenticationException e) {
-            throw new InvalidCredentialsException("Invalid email or password");
-        }
+        return AuthenticationResponse.builder()
+                .token(jwtToken)
+                .user(UserDTO.fromUser(user))
+                .build();
     }
 
     public AuthenticationResponse verifyEmail(String email, String code) {
-        // Find user
+
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        // Find verification token
+
         VerificationToken token = tokenRepository.findByToken(code);
 
         if (token == null) {
@@ -112,25 +101,26 @@ public class AuthenticationService {
             throw new RuntimeException("Verification code expired");
         }
 
-        // Enable user and save
+
         user.setEnabled(true);
         userRepository.save(user);
 
-        // Delete used token
+
         tokenRepository.delete(token);
 
         String jwtToken = jwtService.generateToken(user);
 
-        // Return response with token
+
         return AuthenticationResponse.builder()
                 .token(jwtToken)
                 .message("Email verified successfully")
+                .user(UserDTO.fromUser(user))
                 .build();
     }
 
-    // In AuthenticationService.java
+
     public AuthenticationResponse resendVerificationCode(String email) {
-        // Find user
+
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
@@ -138,16 +128,16 @@ public class AuthenticationService {
             throw new RuntimeException("Email already verified");
         }
 
-        // Delete old verification tokens if any
+
         tokenRepository.findByUser(user)
                 .ifPresent(tokenRepository::delete);
 
-        // Generate new verification code
+
         String verificationCode = generateVerificationCode();
         VerificationToken verificationToken = new VerificationToken(user, verificationCode);
         tokenRepository.save(verificationToken);
 
-        // Send new verification email
+
         emailService.sendVerificationEmail(user.getEmail(), verificationCode);
 
         return AuthenticationResponse.builder()

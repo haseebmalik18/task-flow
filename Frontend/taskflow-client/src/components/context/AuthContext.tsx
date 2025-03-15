@@ -28,7 +28,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const checkAuth = () => {
       const token = localStorage.getItem("token");
       if (token) {
-        // possibly validate token here?
         setState({
           ...state,
           isAuthenticated: true,

@@ -11,6 +11,7 @@ import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
 import Verify from "./pages/auth/Verify";
 import Dashboard from "./pages/Dashboard";
+import BoardView from "./pages/BoardView";
 
 function App() {
   return (
@@ -50,8 +51,15 @@ function App() {
               </PrivateRoute>
             }
           />
+          <Route
+            path="/board/:id"
+            element={
+              <PrivateRoute>
+                <BoardView />
+              </PrivateRoute>
+            }
+          />
 
-          {/* Default Route */}
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
 
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
