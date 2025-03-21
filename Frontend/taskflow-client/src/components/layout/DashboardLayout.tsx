@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useAuth } from "../../components/context/AuthContext";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -33,8 +33,8 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
             Boards
           </h2>
           <div className="space-y-1">
-            <a
-              href="#"
+            <Link
+              to="/dashboard"
               className="flex items-center px-3 py-2 text-[#1e293b] rounded-md bg-[#2563eb]/10 font-medium"
             >
               <svg
@@ -45,7 +45,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
                 <path d="M2 4a1 1 0 011-1h14a1 1 0 011 1v10a1 1 0 01-1 1H3a1 1 0 01-1-1V4z" />
               </svg>
               All Boards
-            </a>
+            </Link>
             <a
               href="#"
               className="flex items-center px-3 py-2 text-[#1e293b] rounded-md hover:bg-gray-100"

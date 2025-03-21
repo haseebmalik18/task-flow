@@ -1,4 +1,3 @@
-
 package com.taskflow.api.service;
 
 import com.taskflow.api.dto.BoardListDTO;
@@ -36,10 +35,12 @@ public class BoardListService {
     public BoardListDTO createList(CreateBoardListRequest request, String email) {
         Board board = getBoardAndVerifyAccess(request.getBoardId(), email);
 
-
         if (request.getPosition() == null) {
             List<BoardList> lists = boardListRepository.findByBoardOrderByPositionAsc(board);
             request.setPosition(lists.size());
+        } else {
+
+            shiftBoardListsForInsert(board, request.getPosition());
         }
 
         BoardList boardList = BoardList.builder()
@@ -57,11 +58,17 @@ public class BoardListService {
         BoardList boardList = boardListRepository.findById(listId)
                 .orElseThrow(() -> new RuntimeException("List not found"));
 
+        Board board = getBoardAndVerifyAccess(boardList.getBoard().getId(), email);
 
-        getBoardAndVerifyAccess(boardList.getBoard().getId(), email);
+
+        Integer oldPosition = boardList.getPosition();
+
 
         boardList.setTitle(request.getTitle());
-        if (request.getPosition() != null) {
+
+
+        if (request.getPosition() != null && !request.getPosition().equals(oldPosition)) {
+            handlePositionChange(board, oldPosition, request.getPosition());
             boardList.setPosition(request.getPosition());
         }
 
@@ -74,10 +81,64 @@ public class BoardListService {
         BoardList boardList = boardListRepository.findById(listId)
                 .orElseThrow(() -> new RuntimeException("List not found"));
 
-
         getBoardAndVerifyAccess(boardList.getBoard().getId(), email);
 
+
+        Integer position = boardList.getPosition();
+        Board board = boardList.getBoard();
+
+
         boardListRepository.delete(boardList);
+
+
+        List<BoardList> listsToUpdate = boardListRepository.findByBoardOrderByPositionAsc(board)
+                .stream()
+                .filter(list -> list.getPosition() > position)
+                .collect(Collectors.toList());
+
+        for (BoardList list : listsToUpdate) {
+            list.setPosition(list.getPosition() - 1);
+            boardListRepository.save(list);
+        }
+    }
+
+
+    private void shiftBoardListsForInsert(Board board, Integer newPosition) {
+        List<BoardList> listsToShift = boardListRepository.findByBoardOrderByPositionAsc(board)
+                .stream()
+                .filter(list -> list.getPosition() >= newPosition)
+                .collect(Collectors.toList());
+
+        for (BoardList listToShift : listsToShift) {
+            listToShift.setPosition(listToShift.getPosition() + 1);
+            boardListRepository.save(listToShift);
+        }
+    }
+
+    private void handlePositionChange(Board board, Integer oldPosition, Integer newPosition) {
+        if (oldPosition < newPosition) {
+
+            List<BoardList> listsToShift = boardListRepository.findByBoardOrderByPositionAsc(board)
+                    .stream()
+                    .filter(list -> list.getPosition() > oldPosition && list.getPosition() <= newPosition)
+                    .collect(Collectors.toList());
+
+            for (BoardList listToShift : listsToShift) {
+                listToShift.setPosition(listToShift.getPosition() - 1);
+                boardListRepository.save(listToShift);
+            }
+        } else {
+
+            List<BoardList> listsToShift = boardListRepository.findByBoardOrderByPositionAsc(board)
+                    .stream()
+                    .filter(list -> list.getPosition() >= newPosition && list.getPosition() < oldPosition)
+                    .collect(Collectors.toList());
+
+            for (BoardList listToShift : listsToShift) {
+                listToShift.setPosition(listToShift.getPosition() + 1);
+                boardListRepository.save(listToShift);
+            }
+        }
     }
 
     private Board getBoardAndVerifyAccess(Long boardId, String email) {
