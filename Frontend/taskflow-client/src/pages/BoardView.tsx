@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
   DragDropContext,
@@ -9,7 +9,7 @@ import {
 import DashboardLayout from "../components/layout/DashboardLayout";
 import { boardService } from "../components/services/api/board";
 import { listService, BoardList } from "../components/services/api/list";
-import { cardService, Card } from "../components/services/api/card";
+import { cardService } from "../components/services/api/card";
 import LoadingSpinner from "../components/common/LoadingSpinner";
 
 const BoardView = () => {
@@ -40,12 +40,10 @@ const BoardView = () => {
         const listsData = await listService.getListsByBoard(id);
         console.log("Lists data from server:", listsData);
 
-        // Sort lists by position explicitly
         const sortedLists = [...listsData].sort(
           (a, b) => a.position - b.position
         );
 
-        // Also sort cards within each list
         sortedLists.forEach((list) => {
           if (list.cards) {
             list.cards.sort((a, b) => a.position - b.position);
@@ -64,7 +62,6 @@ const BoardView = () => {
     fetchBoardData();
   }, [id]);
 
-  // Function to refresh board data from server
   const refreshBoardData = async () => {
     try {
       if (!id) return;
@@ -72,12 +69,10 @@ const BoardView = () => {
       const listsData = await listService.getListsByBoard(id);
       console.log("Refreshed lists data:", listsData);
 
-      // Sort lists by position explicitly
       const sortedLists = [...listsData].sort(
         (a, b) => a.position - b.position
       );
 
-      // Also sort cards within each list
       sortedLists.forEach((list) => {
         if (list.cards) {
           list.cards.sort((a, b) => a.position - b.position);
@@ -140,12 +135,10 @@ const BoardView = () => {
   const onDragEnd = async (result: DropResult) => {
     const { destination, source, draggableId, type } = result;
 
-    // If there's no destination, item was dropped outside droppable area
     if (!destination) {
       return;
     }
 
-    // If destination is same as source, no movement
     if (
       destination.droppableId === source.droppableId &&
       destination.index === source.index
@@ -153,21 +146,16 @@ const BoardView = () => {
       return;
     }
 
-    // Handle list reordering
     if (type === "list") {
-      // Get the list ID from the draggableId (format is "list-{id}")
       const listId = parseInt(draggableId.replace("list-", ""));
 
-      // Create a new array with the lists in the new order
       const reorderedLists = Array.from(lists);
       const [removed] = reorderedLists.splice(source.index, 1);
       reorderedLists.splice(destination.index, 0, removed);
 
-      // Update the UI immediately for responsiveness
       setLists(reorderedLists);
 
       try {
-        // Update the list position on the backend
         const updatedList = await listService.updateList(listId, {
           title: removed.title,
           boardId: parseInt(id || "0"),
@@ -179,7 +167,6 @@ const BoardView = () => {
           updatedList
         );
 
-        // Refresh data from server to ensure consistency
         await refreshBoardData();
       } catch (err) {
         console.error("Error updating list position:", err);
@@ -190,17 +177,14 @@ const BoardView = () => {
       return;
     }
 
-    // Handle card reordering
     const sourceListId = parseInt(source.droppableId);
     const destinationListId = parseInt(destination.droppableId);
 
-    // Create a deep copy of the lists
     const newLists = lists.map((list) => ({
       ...list,
       cards: list.cards ? [...list.cards] : [],
     }));
 
-    // Find the source and destination list
     const sourceList = newLists.find((list) => list.id === sourceListId);
     const destinationList = newLists.find(
       (list) => list.id === destinationListId
@@ -208,22 +192,17 @@ const BoardView = () => {
 
     if (!sourceList || !destinationList) return;
 
-    // Moving card in the same list
     if (sourceListId === destinationListId) {
-      // Get the card ID from the draggableId (format is "card-{id}")
       const cardId = parseInt(draggableId.replace("card-", ""));
 
-      // Reorder the cards in the source list
       const cards = Array.from(sourceList.cards || []);
       const [removed] = cards.splice(source.index, 1);
       cards.splice(destination.index, 0, removed);
 
-      // Update the UI immediately
       sourceList.cards = cards;
       setLists(newLists);
 
       try {
-        // Update the card position on the backend
         await cardService.updateCard(cardId, {
           title: removed.title,
           description: removed.description,
@@ -236,35 +215,26 @@ const BoardView = () => {
           `Card ${cardId} moved to position ${destination.index} in list ${sourceListId}`
         );
 
-        // Refresh data from server to ensure consistency
         await refreshBoardData();
       } catch (err) {
         console.error("Error updating card position:", err);
-        // Optionally revert the UI if the backend update fails
       }
-    }
-    // Moving card between lists
-    else {
-      // Get the card ID from the draggableId
+    } else {
       const cardId = parseInt(draggableId.replace("card-", ""));
 
-      // Remove from source list
       const sourceCards = Array.from(sourceList.cards || []);
       const [removed] = sourceCards.splice(source.index, 1);
       sourceList.cards = sourceCards;
 
-      // Add to destination list
       const destinationCards = Array.from(destinationList.cards || []);
-      // Update the card's listId
+
       const updatedCard = { ...removed, listId: destinationListId };
       destinationCards.splice(destination.index, 0, updatedCard);
       destinationList.cards = destinationCards;
 
-      // Update the UI immediately
       setLists(newLists);
 
       try {
-        // Update the card on the backend (moving to new list and position)
         await cardService.updateCard(cardId, {
           title: removed.title,
           description: removed.description,
@@ -277,11 +247,9 @@ const BoardView = () => {
           `Card ${cardId} moved from list ${sourceListId} to list ${destinationListId} at position ${destination.index}`
         );
 
-        // Refresh data from server to ensure consistency
         await refreshBoardData();
       } catch (err) {
         console.error("Error moving card between lists:", err);
-        // Optionally revert the UI if the backend update fails
       }
     }
   };
@@ -475,7 +443,6 @@ const BoardView = () => {
                 ))}
                 {provided.placeholder}
 
-                {/* Add new list section */}
                 <div className="flex-shrink-0 w-72">
                   {addingList ? (
                     <div className="bg-gray-100 rounded-md p-2">
