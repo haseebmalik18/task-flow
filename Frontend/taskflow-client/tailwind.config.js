@@ -12,6 +12,15 @@ export default {
         error: "#ef4444", // Red
         success: "#22c55e", // Green
       },
+      animation: {
+        shimmer: "shimmer 2s infinite linear",
+      },
+      keyframes: {
+        shimmer: {
+          "0%": { transform: "translateX(-100%)" },
+          "100%": { transform: "translateX(100%)" },
+        },
+      },
     },
   },
   plugins: [],

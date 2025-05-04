@@ -13,6 +13,15 @@ import { cardService } from "../components/services/api/card";
 import LoadingSpinner from "../components/common/LoadingSpinner";
 import CardDetailsModal from "../components/cards/CardDetailsModal";
 
+const stripHtmlTags = (html: string) => {
+  if (!html) return "";
+
+  return html
+    .replace(/<[^>]*>/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+};
+
 const BoardView = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -435,7 +444,12 @@ const BoardView = () => {
                                           <p>{card.title}</p>
                                           {card.description && (
                                             <p className="text-gray-500 text-sm mt-1 truncate">
-                                              {card.description}
+                                              {stripHtmlTags(
+                                                card.description
+                                              ).substring(0, 50)}
+                                              {card.description.length > 50
+                                                ? "..."
+                                                : ""}
                                             </p>
                                           )}
                                         </div>
