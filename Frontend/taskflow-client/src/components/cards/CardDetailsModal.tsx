@@ -1,5 +1,3 @@
-// src/components/cards/CardDetailsModal.tsx
-
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../../components/context/AuthContext";
 import { Card } from "../services/api/card";
@@ -52,12 +50,10 @@ const CardDetailsModal: React.FC<CardDetailsModalProps> = ({
       setTitle(card.title || "");
       setDescription(card.description || "");
 
-      // Fetch card details, comments and checklist items
       const fetchCardDetails = async () => {
         try {
           setLoading(true);
 
-          // Fetch comments and checklist items in parallel
           const [commentsData, checklistItemsData] = await Promise.all([
             commentService.getCommentsByCard(card.id),
             checklistItemService.getChecklistItemsByCard(card.id),
@@ -112,8 +108,6 @@ const CardDetailsModal: React.FC<CardDetailsModalProps> = ({
       console.error("Error adding comment:", error);
     }
   };
-
-  // Continuing src/components/cards/CardDetailsModal.tsx
 
   const handleDeleteComment = async (commentId: number) => {
     try {
@@ -176,7 +170,6 @@ const CardDetailsModal: React.FC<CardDetailsModalProps> = ({
     }
   };
 
-  // Calculate checklist completion percentage
   const completedItems = checklistItems.filter((item) => item.completed).length;
   const checklistTotal = checklistItems.length;
   const completionPercentage = checklistTotal
@@ -233,13 +226,11 @@ const CardDetailsModal: React.FC<CardDetailsModalProps> = ({
             <div className="px-4 pt-5 pb-4 bg-white sm:p-6 sm:pb-4">
               <div className="sm:flex sm:items-start">
                 <div className="w-full">
-                  {/* Card header with color bar */}
                   <div
                     className="h-2 w-full mb-4 rounded-t-md"
                     style={{ backgroundColor: boardBackgroundColor }}
                   ></div>
 
-                  {/* Card title */}
                   <div className="mb-6">
                     {isEditing ? (
                       <input
@@ -276,7 +267,6 @@ const CardDetailsModal: React.FC<CardDetailsModalProps> = ({
                     )}
                   </div>
 
-                  {/* Description */}
                   <div className="mb-6">
                     <h4 className="mb-2 text-sm font-medium text-gray-700">
                       Description
@@ -317,7 +307,6 @@ const CardDetailsModal: React.FC<CardDetailsModalProps> = ({
                     )}
                   </div>
 
-                  {/* Checklist */}
                   <div className="mb-6">
                     <div className="flex items-center justify-between mb-2">
                       <h4 className="text-sm font-medium text-gray-700">
@@ -428,13 +417,11 @@ const CardDetailsModal: React.FC<CardDetailsModalProps> = ({
                     )}
                   </div>
 
-                  {/* Comments */}
                   <div>
                     <h4 className="mb-3 text-sm font-medium text-gray-700">
                       Comments
                     </h4>
 
-                    {/* Add comment form */}
                     <div className="flex mb-4">
                       <div className="flex-shrink-0 mr-3">
                         <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold text-sm">
@@ -460,7 +447,6 @@ const CardDetailsModal: React.FC<CardDetailsModalProps> = ({
                       </div>
                     </div>
 
-                    {/* Comments list */}
                     <div className="space-y-4">
                       {comments.length > 0 ? (
                         comments.map((comment) => (
@@ -485,7 +471,6 @@ const CardDetailsModal: React.FC<CardDetailsModalProps> = ({
                               </div>
                               <p className="text-gray-700">{comment.content}</p>
 
-                              {/* Show delete button if user is the author */}
                               {user?.id === comment.author.id && (
                                 <button
                                   onClick={() =>
@@ -509,7 +494,6 @@ const CardDetailsModal: React.FC<CardDetailsModalProps> = ({
             </div>
           )}
 
-          {/* Footer with actions */}
           <div className="px-4 py-3 bg-gray-50 sm:px-6 sm:flex sm:flex-row-reverse">
             {isEditing && (
               <>

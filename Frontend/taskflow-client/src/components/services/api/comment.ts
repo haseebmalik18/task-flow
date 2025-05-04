@@ -1,5 +1,3 @@
-// src/components/services/api/comment.ts
-
 import api from "./axios";
 
 export interface Comment {

@@ -42,9 +42,6 @@ export const cardService = {
     await api.delete(`/cards/${id}`);
   },
 
-  // Update src/components/services/api/card.ts
-
-  // Add getCardDetails method to the cardService object
   getCardDetails: async (id: number | string): Promise<Card> => {
     const response = await api.get<Card>(`/cards/${id}/details`);
     return response.data;

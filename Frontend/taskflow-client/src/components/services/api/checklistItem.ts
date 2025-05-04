@@ -1,5 +1,3 @@
-// src/components/services/api/checklistItem.ts
-
 import api from "./axios";
 
 export interface ChecklistItem {

@@ -150,7 +150,6 @@ const BoardView = () => {
         dueDate: updatedCard.dueDate,
       });
 
-      // Update the card in the lists state
       const updatedLists = lists.map((list) => {
         if (list.id === updatedCard.listId) {
           return {
@@ -177,7 +176,6 @@ const BoardView = () => {
     try {
       await cardService.deleteCard(selectedCard.id);
 
-      // Update the lists state by removing the deleted card
       const updatedLists = lists.map((list) => {
         if (list.id === selectedCard.listId) {
           return {
@@ -235,8 +233,6 @@ const BoardView = () => {
         await refreshBoardData();
       } catch (err) {
         console.error("Error updating list position:", err);
-        // Optionally revert the UI if the backend update fails
-        // setLists(lists);
       }
 
       return;
@@ -556,7 +552,6 @@ const BoardView = () => {
           </Droppable>
         </DragDropContext>
 
-        {/* Card Details Modal */}
         <CardDetailsModal
           isOpen={isCardDetailsModalOpen}
           onClose={() => setIsCardDetailsModalOpen(false)}
