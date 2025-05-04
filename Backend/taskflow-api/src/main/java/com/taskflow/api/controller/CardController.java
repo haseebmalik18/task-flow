@@ -54,4 +54,15 @@ public class CardController {
         cardService.deleteCard(id, email);
         return ResponseEntity.noContent().build();
     }
+
+    // Add this method to src/main/java/com/taskflow/api/controller/CardController.java
+
+    @GetMapping("/{id}/details")
+    public ResponseEntity<CardDTO> getCardDetails(
+            @PathVariable Long id,
+            Authentication authentication
+    ) {
+        String email = authentication.getName();
+        return ResponseEntity.ok(cardService.getCardDetails(id, email));
+    }
 }

@@ -1,4 +1,4 @@
-// Update src/main/java/com/taskflow/api/model/Card.java
+// src/main/java/com/taskflow/api/model/Comment.java
 
 package com.taskflow.api.model;
 
@@ -9,39 +9,28 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
 @Data
 @Entity
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "cards")
-public class Card {
+@Table(name = "comments")
+public class Comment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
-    private String title;
-
-    @Column(columnDefinition = "TEXT")
-    private String description;
+    @Column(nullable = false, columnDefinition = "TEXT")
+    private String content;
 
     @ManyToOne
-    @JoinColumn(name = "list_id", nullable = false)
-    private BoardList list;
+    @JoinColumn(name = "card_id", nullable = false)
+    private Card card;
 
-    private Integer position;
-
-    private LocalDateTime dueDate;
-
-    @OneToMany(mappedBy = "card", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Comment> comments = new ArrayList<>();
-
-    @OneToMany(mappedBy = "card", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<ChecklistItem> checklistItems = new ArrayList<>();
+    @ManyToOne
+    @JoinColumn(name = "user_id", nullable = false)
+    private User author;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;

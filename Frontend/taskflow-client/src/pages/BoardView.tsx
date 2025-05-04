@@ -11,6 +11,7 @@ import { boardService } from "../components/services/api/board";
 import { listService, BoardList } from "../components/services/api/list";
 import { cardService } from "../components/services/api/card";
 import LoadingSpinner from "../components/common/LoadingSpinner";
+import CardDetailsModal from "../components/cards/CardDetailsModal";
 
 const BoardView = () => {
   const { id } = useParams<{ id: string }>();
@@ -27,6 +28,8 @@ const BoardView = () => {
   const [addingCards, setAddingCards] = useState<{ [key: number]: boolean }>(
     {}
   );
+  const [selectedCard, setSelectedCard] = useState<any>(null);
+  const [isCardDetailsModalOpen, setIsCardDetailsModalOpen] = useState(false);
 
   useEffect(() => {
     const fetchBoardData = async () => {
@@ -129,6 +132,68 @@ const BoardView = () => {
     } catch (err) {
       console.error("Error adding card:", err);
       setError("Failed to add card");
+    }
+  };
+
+  const handleCardClick = (card: any) => {
+    setSelectedCard(card);
+    setIsCardDetailsModalOpen(true);
+  };
+
+  const handleUpdateCard = async (updatedCard: any) => {
+    try {
+      await cardService.updateCard(updatedCard.id, {
+        title: updatedCard.title,
+        description: updatedCard.description,
+        listId: updatedCard.listId,
+        position: updatedCard.position,
+        dueDate: updatedCard.dueDate,
+      });
+
+      // Update the card in the lists state
+      const updatedLists = lists.map((list) => {
+        if (list.id === updatedCard.listId) {
+          return {
+            ...list,
+            cards: list.cards.map((card) =>
+              card.id === updatedCard.id ? { ...card, ...updatedCard } : card
+            ),
+          };
+        }
+        return list;
+      });
+
+      setLists(updatedLists);
+      setSelectedCard(updatedCard);
+    } catch (err) {
+      console.error("Error updating card:", err);
+      setError("Failed to update card");
+    }
+  };
+
+  const handleDeleteCard = async () => {
+    if (!selectedCard) return;
+
+    try {
+      await cardService.deleteCard(selectedCard.id);
+
+      // Update the lists state by removing the deleted card
+      const updatedLists = lists.map((list) => {
+        if (list.id === selectedCard.listId) {
+          return {
+            ...list,
+            cards: list.cards.filter((card) => card.id !== selectedCard.id),
+          };
+        }
+        return list;
+      });
+
+      setLists(updatedLists);
+      setIsCardDetailsModalOpen(false);
+      setSelectedCard(null);
+    } catch (err) {
+      console.error("Error deleting card:", err);
+      setError("Failed to delete card");
     }
   };
 
@@ -369,6 +434,7 @@ const BoardView = () => {
                                               ? "shadow-lg bg-blue-50"
                                               : ""
                                           }`}
+                                          onClick={() => handleCardClick(card)}
                                         >
                                           <p>{card.title}</p>
                                           {card.description && (
@@ -489,6 +555,16 @@ const BoardView = () => {
             )}
           </Droppable>
         </DragDropContext>
+
+        {/* Card Details Modal */}
+        <CardDetailsModal
+          isOpen={isCardDetailsModalOpen}
+          onClose={() => setIsCardDetailsModalOpen(false)}
+          card={selectedCard}
+          onUpdateCard={handleUpdateCard}
+          onDeleteCard={handleDeleteCard}
+          boardBackgroundColor={board?.backgroundColor || "#2563eb"}
+        />
       </div>
     </DashboardLayout>
   );
