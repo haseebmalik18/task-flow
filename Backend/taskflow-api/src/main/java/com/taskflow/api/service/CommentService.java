@@ -1,4 +1,4 @@
-// src/main/java/com/taskflow/api/service/CommentService.java
+
 
 package com.taskflow.api.service;
 
@@ -51,10 +51,10 @@ public class CommentService {
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new RuntimeException("Comment not found"));
 
-        // Verify access to the card
+
         cardService.getCardAndVerifyAccess(comment.getCard().getId(), email);
 
-        // Check if the user is the author of the comment
+
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 

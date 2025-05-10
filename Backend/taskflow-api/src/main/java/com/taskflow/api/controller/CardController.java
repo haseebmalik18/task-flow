@@ -55,7 +55,7 @@ public class CardController {
         return ResponseEntity.noContent().build();
     }
 
-    // Add this method to src/main/java/com/taskflow/api/controller/CardController.java
+
 
     @GetMapping("/{id}/details")
     public ResponseEntity<CardDTO> getCardDetails(

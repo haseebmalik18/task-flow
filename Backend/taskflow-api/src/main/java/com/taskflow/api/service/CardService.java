@@ -182,20 +182,19 @@ public class CardService {
         return list;
     }
 
-    // Add this method to src/main/java/com/taskflow/api/service/CardService.java
 
-    // Inside CardService class
+
     public CardDTO getCardDetails(Long cardId, String email) {
         Card card = getCardAndVerifyAccess(cardId, email);
         return CardDTO.fromCardWithDetails(card);
     }
 
-    // Also add this helper method and make it public
+
     public Card getCardAndVerifyAccess(Long cardId, String email) {
         Card card = cardRepository.findById(cardId)
                 .orElseThrow(() -> new RuntimeException("Card not found"));
 
-        // Verify card's list belongs to the user
+
         BoardList list = card.getList();
         boardListService.getListsByBoard(list.getBoard().getId(), email);
 

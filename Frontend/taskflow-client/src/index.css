@@ -29,6 +29,28 @@
   font-size: 1rem;
 }
 
+/* Add these new rules for links */
+.ql-editor a,
+.syntax-highlighted-content a,
+.prose a {
+  color: #2563eb; /* Blue color matching your theme */
+  text-decoration: underline;
+  transition: color 0.2s;
+}
+
+.ql-editor a:hover,
+.syntax-highlighted-content a:hover,
+.prose a:hover {
+  color: #1e40af; /* Darker blue on hover */
+}
+
+/* Make sure links are properly styled when rendered in card details */
+.card-details-modal .prose a,
+.card-details-modal .ql-editor a {
+  color: #2563eb;
+  text-decoration: underline;
+}
+
 .ql-syntax {
   display: block;
   overflow-x: auto;
