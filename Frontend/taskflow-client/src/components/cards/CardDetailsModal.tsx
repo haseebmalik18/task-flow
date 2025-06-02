@@ -11,6 +11,9 @@ import {
   checklistItemService,
   CreateChecklistItemRequest,
 } from "../services/api/checklistItem";
+import { labelService, Label } from "../services/api/label";
+import LabelSelectorModal from "../labels/LabelSelectorModal";
+import CardLabels from "../labels/CardLabels";
 
 import { format } from "date-fns";
 import ReactQuill from "react-quill";
@@ -38,6 +41,7 @@ interface CardDetailsModalProps {
   onUpdateCard: (card: Card) => Promise<void>;
   onDeleteCard?: () => Promise<void>;
   boardBackgroundColor: string;
+  boardId?: number;
 }
 
 const refreshSyntaxHighlighting = () => {
@@ -65,17 +69,20 @@ const CardDetailsModal: React.FC<CardDetailsModalProps> = ({
   onUpdateCard,
   onDeleteCard,
   boardBackgroundColor,
+  boardId,
 }) => {
   const { user } = useAuth();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [comments, setComments] = useState<Comment[]>([]);
   const [checklistItems, setChecklistItems] = useState<ChecklistItem[]>([]);
+  const [cardLabels, setCardLabels] = useState<Label[]>([]);
   const [newComment, setNewComment] = useState("");
   const [newChecklistItem, setNewChecklistItem] = useState("");
   const [addingChecklistItem, setAddingChecklistItem] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [isLabelSelectorOpen, setIsLabelSelectorOpen] = useState(false);
 
   const quillModules = useMemo(
     () => ({
@@ -118,6 +125,7 @@ const CardDetailsModal: React.FC<CardDetailsModalProps> = ({
     if (card) {
       setTitle(card.title || "");
       setDescription(card.description || "");
+      setCardLabels(card.labels || []);
 
       const fetchCardDetails = async () => {
         try {
@@ -168,6 +176,7 @@ const CardDetailsModal: React.FC<CardDetailsModalProps> = ({
         ...card,
         title,
         description,
+        labels: cardLabels,
       });
       setIsEditing(false);
 
@@ -256,6 +265,25 @@ const CardDetailsModal: React.FC<CardDetailsModalProps> = ({
       setChecklistItems(checklistItems.filter((item) => item.id !== itemId));
     } catch (error) {
       console.error("Error deleting checklist item:", error);
+    }
+  };
+
+  const handleToggleLabel = async (
+    label: Label,
+    isCurrentlySelected: boolean
+  ) => {
+    if (!card) return;
+
+    try {
+      if (isCurrentlySelected) {
+        await labelService.removeLabelFromCard(card.id, label.id);
+        setCardLabels(cardLabels.filter((l) => l.id !== label.id));
+      } else {
+        await labelService.addLabelToCard(card.id, label.id);
+        setCardLabels([...cardLabels, label]);
+      }
+    } catch (error) {
+      console.error("Error toggling label:", error);
     }
   };
 
@@ -352,6 +380,32 @@ const CardDetailsModal: React.FC<CardDetailsModalProps> = ({
                 </div>
 
                 <div className="mb-6">
+                  <div className="flex items-center justify-between mb-2">
+                    <h4 className="text-sm font-medium text-gray-700">
+                      Labels
+                    </h4>
+                    <button
+                      onClick={() => setIsLabelSelectorOpen(true)}
+                      className="text-sm text-blue-500 hover:text-blue-600 transition-colors"
+                    >
+                      Edit Labels
+                    </button>
+                  </div>
+
+                  {cardLabels.length > 0 ? (
+                    <CardLabels
+                      labels={cardLabels}
+                      showNames={true}
+                      className="gap-2"
+                    />
+                  ) : (
+                    <p className="text-gray-500 text-sm italic">
+                      No labels assigned
+                    </p>
+                  )}
+                </div>
+
+                <div className="mb-6">
                   <h4 className="mb-2 text-sm font-medium text-gray-700">
                     Description
                   </h4>
@@ -375,7 +429,7 @@ const CardDetailsModal: React.FC<CardDetailsModalProps> = ({
                     </div>
                   ) : (
                     <div
-                      className="p-3 prose max-w-none rounded-md bg-gray-50 hover:bg-gray-100 syntax-highlighted-content"
+                      className="p-3 prose max-w-none rounded-md bg-gray-50 hover:bg-gray-100 syntax-highlighted-content cursor-pointer"
                       onClick={() => setIsEditing(true)}
                     >
                       {description ? (
@@ -627,6 +681,14 @@ const CardDetailsModal: React.FC<CardDetailsModalProps> = ({
           </div>
         </div>
       </div>
+
+      <LabelSelectorModal
+        isOpen={isLabelSelectorOpen}
+        onClose={() => setIsLabelSelectorOpen(false)}
+        boardId={boardId || 0}
+        cardLabels={cardLabels}
+        onToggleLabel={handleToggleLabel}
+      />
     </div>
   );
 };

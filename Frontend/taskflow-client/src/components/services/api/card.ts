@@ -1,4 +1,5 @@
 import api from "./axios";
+import { Label } from "./label";
 
 export interface Card {
   id: number;
@@ -7,6 +8,7 @@ export interface Card {
   listId: number;
   position: number;
   dueDate?: string;
+  labels: Label[];
   createdAt: string;
   updatedAt: string;
 }
